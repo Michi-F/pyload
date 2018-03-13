@@ -12,7 +12,7 @@ from ..internal.SimpleHoster import SimpleHoster
 class ShareonlineBiz(SimpleHoster):
     __name__ = "ShareonlineBiz"
     __type__ = "hoster"
-    __version__ = "0.67"
+    __version__ = "0.68"
     __status__ = "testing"
 
     __pattern__ = r'https?://(?:www\.)?(share-online\.biz|egoshare\.com)/(download\.php\?id=|dl/)(?P<ID>\w+)'
@@ -30,13 +30,9 @@ class ShareonlineBiz(SimpleHoster):
                    ("zoidberg", "zoidberg@mujmail.cz"),
                    ("Walter Purcaro", "vuolter@gmail.com")]
 
-    URL_REPLACEMENTS = [
-        (__pattern__ + ".*",
-         "http://www.share-online.biz/dl/\g<ID>")]
+    URL_REPLACEMENTS = [(__pattern__ + ".*", "http://www.share-online.biz/dl/\g<ID>")]
 
     CHECK_TRAFFIC = True
-
-    RECAPTCHA_KEY = "6LdnPkIUAAAAABqC_ITR9-LTJKSdyR_Etj1Sf-Xi"
 
     ERROR_PATTERN = r'<p class="b">Information:</p>\s*<div>\s*<strong>(.*?)</strong>'
 
@@ -68,10 +64,8 @@ class ShareonlineBiz(SimpleHoster):
         self.multiDL = False
 
     def handle_captcha(self):
-        self.log_debug("start reCAPTCHA V2 javascript")
         self.captcha = ReCaptcha(self.pyfile)
-        challenge = self.captcha.challenge(self.RECAPTCHA_KEY, version='v2_javascript')
-        response = challenge
+        response, challenge = self.captcha.challenge(version='v2js')
 
         m = re.search(r'var wait=(\d+);', self.data)
         self.set_wait(int(m.group(1)) if m else 30)

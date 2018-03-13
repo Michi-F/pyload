@@ -13,7 +13,7 @@ from ..internal.SimpleHoster import SimpleHoster
 class UploadedTo(SimpleHoster):
     __name__ = "UploadedTo"
     __type__ = "hoster"
-    __version__ = "1.08"
+    __version__ = "1.09"
     __status__ = "testing"
 
     __pattern__ = r'https?://(?:www\.)?(uploaded\.(to|net)|ul\.to)(/file/|/?\?id=|.*?&id=|/)(?P<ID>\w+)'
@@ -30,12 +30,9 @@ class UploadedTo(SimpleHoster):
 
     CHECK_TRAFFIC = True
 
-    URL_REPLACEMENTS = [
-        (__pattern__ + ".*", r'http://uploaded.net/file/\g<ID>')]
+    URL_REPLACEMENTS = [(__pattern__ + ".*", r'http://uploaded.net/file/\g<ID>')]
 
     API_KEY = "lhF2IeeprweDfu9ccWlxXVVypA5nA3EL"
-
-    RECAPTCHA_KEY = "6Le1WUIUAAAAAG0gEh0atRevv3TT-WP4HW8FLMoe"
 
     OFFLINE_PATTERN = r'>Page not found'
     TEMP_OFFLINE_PATTERN = r'<title>uploaded\.net - Maintenance|Downloads have been blocked for today.<'
@@ -82,10 +79,8 @@ class UploadedTo(SimpleHoster):
 
         self.data = self.load("http://uploaded.net/js/download.js")
 
-        self.log_debug("start reCAPTCHA V2 javascript")
         self.captcha = ReCaptcha(pyfile)
-        challenge = self.captcha.challenge(self.RECAPTCHA_KEY, version='v2_javascript')
-        response = challenge
+        response, challenge = self.captcha.challenge(version='v2js')
 
         self.data = self.load("http://uploaded.net/io/ticket/captcha/%s" % self.info['pattern']['ID'],
                               post={'g-recaptcha-response': challenge})

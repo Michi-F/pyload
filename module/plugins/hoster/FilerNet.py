@@ -14,7 +14,7 @@ from ..internal.SimpleHoster import SimpleHoster
 class FilerNet(SimpleHoster):
     __name__ = "FilerNet"
     __type__ = "hoster"
-    __version__ = "0.26"
+    __version__ = "0.27"
     __status__ = "testing"
 
     __pattern__ = r'https?://(?:www\.)?filer\.net/get/\w+'
@@ -36,8 +36,6 @@ class FilerNet(SimpleHoster):
 
     LINK_FREE_PATTERN = LINK_PREMIUM_PATTERN = r'href="([^"]+)">Get download</a>'
 
-    RECAPTCHA_KEY = "6LdB1kcUAAAAAAVPepnD-6TEd4BXKzS7L4FZFkpO"
-
     def handle_free(self, pyfile):
         inputs = self.parse_html_form(
             input_names={'token': re.compile(r'.+')})[1]
@@ -51,16 +49,15 @@ class FilerNet(SimpleHoster):
         if 'hash' not in inputs:
             self.error(_("Unable to detect hash"))
 
-        self.log_debug("start reCAPTCHA V2 javascript")
         self.captcha = ReCaptcha(self.pyfile)
-        challenge = self.captcha.challenge(self.RECAPTCHA_KEY, version='v2_javascript')
+        response, challenge = self.captcha.challenge(version='v2js')
 
         #: Avoid 'Correct catcha'
         captcha_task = self.captcha.task
         self.captcha.task = None
 
         self.download(pyfile.url,
-                      post={'g-recaptcha-response': challenge,
+                      post={'g-recaptcha-response': response,
                             'hash': inputs['hash']})
 
         #: Restore the captcha task
