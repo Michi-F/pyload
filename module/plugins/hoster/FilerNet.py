@@ -50,7 +50,7 @@ class FilerNet(SimpleHoster):
             self.error(_("Unable to detect hash"))
 
         self.captcha = ReCaptcha(self.pyfile)
-        response, challenge = self.captcha.challenge(version='v2js')
+        response, challenge = self.captcha.challenge(version='2js')
 
         #: Avoid 'Correct catcha'
         captcha_task = self.captcha.task
