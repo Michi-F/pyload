@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Pyload Script for interactive reCAPTCHA V2
 // @namespace    https://pyload.net/
-// @version      0.13
+// @version      0.14
 // @author       Michi-F
 // @description  Pyload Script for interactive reCAPTCHA V2
 // @homepage     https://github.com/pyload/pyload
@@ -48,52 +48,53 @@
     window.addEventListener('message', function(e) {
         var request = JSON.parse(e.data);
         var returnObject = null;
-        if(request.actionCode == window.pyloadActionCodes.activate)
-        {
+        if(request.actionCode === window.pyloadActionCodes.activate) {
             window.pyloadRecaptchaV2InteractiveSitekey = request.value;
 
-            while(document.children[0].childElementCount > 0)
-            {
+            while (document.children[0].childElementCount > 0) {
                 document.children[0].removeChild(document.children[0].children[0]);
             }
             document.children[0].innerHTML = '<html><style>div{background-color:transparent!important;}</style><head></head><body><div id="captchadiv"></div></body></html>';
 
             // function that is called when the captcha is completed
-            window.pyloadCaptchaCompletedCallback = function()
-            {
-                if(pyloadIsCaptchaCompleted())
-                {
+            window.pyloadCaptchaCompletedCallback = function () {
+                if (pyloadIsCaptchaCompleted()) {
                     // get captcha response
                     var recaptchaResponse = grecaptcha.getResponse();
                     // yes, we got a valid response!
                     // now pass the download link to the callback function on the pyload page
-                    var returnObject = {actionCode: window.pyloadActionCodes.sendRecaptchaResponse, value: recaptchaResponse};
-                    parent.postMessage(JSON.stringify(returnObject),"*");
+                    var returnObject = {
+                        actionCode: window.pyloadActionCodes.sendRecaptchaResponse,
+                        value: recaptchaResponse
+                    };
+                    parent.postMessage(JSON.stringify(returnObject), "*");
                 }
             };
 
             // checks if the captcha is completed
-            window.pyloadIsCaptchaCompleted = function()
-            {
+            window.pyloadIsCaptchaCompleted = function () {
                 return grecaptcha && grecaptcha.getResponse().length !== 0;
             };
 
-            window.captchaOnloadCallback = function()
-            {
+            window.captchaOnloadCallback = function () {
                 grecaptcha.render(
                     document.getElementById("captchadiv"),
-                    {sitekey:window.pyloadRecaptchaV2InteractiveSitekey, callback: pyloadCaptchaCompletedCallback}
+                    {sitekey: window.pyloadRecaptchaV2InteractiveSitekey, callback: pyloadCaptchaCompletedCallback}
                 );
-                
+
                 var returnObject = {actionCode: window.pyloadActionCodes.activated, value: true};
-                parent.postMessage(JSON.stringify(returnObject),"*");
+                parent.postMessage(JSON.stringify(returnObject), "*");
             };
 
-            var js_script = document.createElement('script');
-            js_script.type = "text/javascript";
-            js_script.src = "https://www.google.com/recaptcha/api.js?onload=captchaOnloadCallback&render=explicit";
-            js_script.async = true;
-            document.getElementsByTagName('head')[0].appendChild(js_script);
+            if (typeof grecaptcha !== 'undefined' && grecaptcha) {
+                captchaOnloadCallback();
+            } else {
+                var js_script = document.createElement('script');
+                js_script.type = "text/javascript";
+                js_script.src = "//www.google.com/recaptcha/api.js?onload=captchaOnloadCallback&render=explicit";
+                js_script.async = true;
+                document.getElementsByTagName('head')[0].appendChild(js_script);
+            }
         }
     });
 })();
